@@ -1,0 +1,30 @@
+.Rproj.user
+.Rhistory
+.RData
+.Rproj
+.html
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+## Intermediate documents:
+*.dvi
+*-converted-to.*
+## Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+## Other files
+links
