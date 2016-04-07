@@ -1,0 +1,134 @@
+---
+title: Introdução à Análise de Dados de Contagem com R
+author: Eduardo E. R. Junior
+date: "`r format(Sys.time(), '%d de %B de %Y')`"
+fontsize: "10pt"
+output: 
+  beamer_presentation:
+    fig_caption: yes
+    highlight: tango
+    includes:
+      in_header: preambulo-beamer.tex
+    keep_tex: no
+    slide_level: 3
+---
+
+<!-- Arquivos de estilo de bibliográfica e citação "Citation Style -->
+<!-- Language (CSL)" disponíveis em -->
+<!-- <https://github.com/citation-style-language/styles> -->
+
+```{r, include = FALSE}
+
+##-------------------------------------------
+## Definições knitr
+library(knitr)
+
+knitr::knit_hooks$set(
+    ## Para fontsize de chunk R
+    mysize = function(before, options, envir) {
+        if (before) return(options$size)
+    }
+)
+
+opts_chunk$set(
+    mysize = TRUE,
+    tidy = FALSE,
+    cache = TRUE,
+    echo = FALSE,
+    size = "\\scriptsize",
+    out.width = "1\\textwidth",
+    fig.path = "figures/",
+    cache.path = "cache/",
+    fig.align = "center",
+    dev.args = list(family = "Palatino")
+    )
+
+```
+
+<!-- ###  ### -->
+
+\titlepage
+
+### Disponibilização ###
+
+\begin{columns}[c]
+\column{.3\textwidth}
+\begin{flushright}	
+      \includegraphics[scale=0.07]{./figures/github_icon}\\
+\end{flushright}
+\column{.7\textwidth}
+    \url{https://github.com/jreduardo/iadcr}
+\end{columns}
+
+\begin{center}
+  \vspace{0.3cm}
+  {\tt
+    \textcolor{url}{I}ntrodução à
+    \textcolor{url}{A}nálise de 
+    \textcolor{url}{D}ados de 
+    \textcolor{url}{C}ontagem com
+    \textcolor{url}{R} -
+  \href{https://github.com/JrEduardo/iguiR}{iadcr}
+  }
+\end{center}
+
+### Sumário ###
+
+\tableofcontents[hideallsubsections]
+
+<!-- ------------------------------------------- -->
+# Introdução #
+
+###  ###
+
+* Dados de contagem (Definição, objetivos na análise)
+* Modelos de regresão (ideia geral)
+
+<!-- ------------------------------------------- -->
+# Modelo Poisson #
+
+###  ###
+
+* Propriedades (equidispersão, relação exponencial, razão de
+  prob. consecutivas)
+* Regressão (familía exponencial, função de ligação, interpretação dos
+  parâmetros)
+* IWLS, Medidas de diagnóstico
+* Exemplo prático
+
+# Modelos Alternativos #
+
+## Fuga de equidispersão ##
+
+###  ###
+
+* Modelo Binomial Negativo
+    * Definição
+    * Vantagens e desvantagens
+* Modelo Quasi-Poisson
+    * Definição
+    * Vantagens e desvantagens
+* Exemplo prático
+
+## Excesso de zeros ##
+
+###  ###
+
+* Modelo _Hurdle_ (de barreira)
+    * Definição
+
+* Modelo _Zero Inflated Poisson_ (mistura)
+    * Definição
+
+* Exemplo Prático
+
+## Outras abordagens ##
+
+###  ###
+
+* Modelo _COM-Poisson_
+* Modelo _Gamma-Count_
+* Com efeito aleatório
+* Modelos para dados censurados
+* Modelos para respostas correlacionadas
+* ...
