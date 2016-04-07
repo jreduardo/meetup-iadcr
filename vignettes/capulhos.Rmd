@@ -1,0 +1,172 @@
+% Análise de Capulhos de Algodão sob Efeito da Mosca-Branca
+% Eduardo E. R. Junior - MEETUP USER-SP
+% `r format(Sys.time(), "%d de %B de %Y")`
+
+```{r, include = FALSE}
+
+##-------------------------------------------
+## Definições knitr
+library(knitr)
+
+opts_chunk$set(
+    cache = FALSE,
+    fig.path = "figures/",
+    cache.path = "cache/",
+    fig.align = "center",
+    dev.args = list(family = "Palatino")
+    )
+
+##-------------------------------------------
+## Definições lattice
+library(lattice)
+library(latticeExtra)
+
+ps <- list(
+    box.rectangle = list(fill = c("gray70")),
+    box.umbrella = list(lty = 1),
+    dot.symbol = list(pch = 19),
+    dot.line = list(col = "gray50", lty = 3),
+    plot.symbol = list(pch = 19),
+    strip.background = list(col = c("gray80", "gray50"))
+    )
+trellis.par.set(ps)
+
+```
+
+***
+
+Esta vinheta de análise exemplifica o caso de um conjunto de dados, cujo
+a variável de interesse, contagem do número de capulhos em plantas de
+algodão, apresenta subdispersão, ou seja, $E[Y|X] > V[Y|X]$. Neste
+documento serão apresentados uma alternativa para análise via
+Quasi-Verossimilhança.
+
+# Conjunto de Dados #
+
+Os dados a serem analisados são referentes a um experimento conduzido na
+UFGD. Um dos objetivos do experimento foi avaliar o impacto da exposição
+de plantas de algodão à alta infestação de Mosca-Branca _Bemisia
+tabaci_, sob o número de capulhos produzidos. As variáveis consideradas
+foram:
+
+* `dexp:` Dias de exposição a alta infestação da praga; e
+* `nacpu:` Número de capulhos produzidos.
+
+No R o conjunto possui a seguinte estrutura
+
+```{r}
+
+## Carrega o conjunto de dados
+load("capulhos.rda")
+str(capulhos)
+
+```
+
+```{r}
+
+## Visualizando graficamente
+xyplot(ncapu ~ dexp, data = capulhos,
+       jitter.x = TRUE, grid = TRUE)
+
+## Verificando a relação média-variância
+aggregate(ncapu ~ dexp, data = capulhos,
+          FUN = function(x)
+              c("Média" = mean(x), "Variância" = var(x)))
+
+```
+
+# Modelagem Estatística #
+
+## Ajuste do modelo ##
+
+```{r}
+
+## Preditores Considerados
+f0 <- ncapu ~ 1
+f1 <- ncapu ~ dexp
+f2 <- ncapu ~ dexp + I(dexp^2)
+
+## Ajustando os modelos Poisson
+m0P <- glm(f0, data = capulhos, family = poisson)
+m1P <- glm(f1, data = capulhos, family = poisson)
+m2P <- glm(f2, data = capulhos, family = poisson)
+
+## Ajustando os modelos Quasi-Poisson
+m0Q <- glm(f0, data = capulhos, family = quasipoisson)
+m1Q <- glm(f1, data = capulhos, family = quasipoisson)
+m2Q <- glm(f2, data = capulhos, family = quasipoisson)
+
+```
+
+```{r}
+
+## Testes de razão de verossimilhanças
+anova(m0P, m1P, m2P, test = "Chisq")
+anova(m0Q, m1Q, m2Q, test = "Chisq")
+
+```
+
+```{r}
+
+## Estimativas dos parâmetros
+## lapply(list("Poisson" = m2P, "Quasi" = m2Q),
+##        function(x) cbind("Est" = coef(x), "SE" = sqrt(diag(vcov(x)))))
+## coefcbind(coef(summary(m2P))[, 1:2], coef(summary(m2Q))[, 1:2])
+car::compareCoefs(m2P, m2Q)
+
+```
+
+```{r}
+
+## Resumo do modelo
+summary(m2Q)
+
+```
+
+## Análise de diagnóstico ##
+
+```{r, eval = FALSE}
+
+## Análise de diagnóstico
+boot::glm.diag.plots(m2Q)
+boot::glm.diag.plots(m2P)
+
+## Verificar
+hnp::hnp(m2P)
+hnp::hnp(m2Q)
+
+```
+
+## Predição ##
+
+```{r}
+
+## Predição
+pred <- data.frame(dexp = with(capulhos,
+                               seq(min(dexp), max(dexp), l = 50)))
+qn <- qnorm(0.975)
+
+## pela Poisson
+aux <- predict(m2P, newdata = pred, se.fit = TRUE)
+aux <- with(aux, fit + se.fit %*%
+                 cbind(Plwr = -1, Pfit = 0, Pupr = 1) * qn)
+pred <- cbind(pred, exp(aux))
+
+## pela Quasi-Poisson
+aux <- predict(m2Q, newdata = pred, se.fit = TRUE)
+aux <- with(aux, fit + se.fit %*%
+                 cbind(Qlwr = -1, Qfit = 0, Qupr = 1) * qn)
+pred <- cbind(pred, exp(aux))
+
+xyplot(ncapu ~ dexp, data = capulhos,
+       jitter.x = TRUE) +
+    as.layer(
+        xyplot(Pfit + Plwr + Pupr ~ dexp, data = pred,
+               type = "l", col = 1, lty = c(1, 3, 3), lwd = 2)
+    ) +
+    as.layer(
+        xyplot(Qfit + Qlwr + Qupr ~ dexp, data = pred,
+               type = "l", col = 2, lty = c(1, 2, 2), lwd = 2)
+    )
+
+```
