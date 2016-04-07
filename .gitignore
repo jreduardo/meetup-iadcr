@@ -28,7 +28,7 @@
 
 ## Rmd output files
 **/cache/*
-**/figures/unnamed*.pdf
+**/figures/unnamed*.*
 
 ## Emacs
 .#*
