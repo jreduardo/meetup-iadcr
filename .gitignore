@@ -26,5 +26,12 @@
 *.synctex.gz(busy)
 *.pdfsync
 
+## Rmd output files
+**/cache/*
+**/figures/unnamed*.pdf
+
+## Emacs
+.#*
+
 ## Other files
 links
