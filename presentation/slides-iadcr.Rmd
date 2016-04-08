@@ -94,7 +94,7 @@ domínio específico.
 Se $Y$ é uma v.a de contagem, $y \in \mathbb{Z}_+$, ou seja, $y = 0, 1,
 2, ...$
 
-\vspace{0.5cm} \pause
+\vspace{0.5cm} 
 
 Exemplos:
 
@@ -114,7 +114,7 @@ Exemplos:
   \mathbb{Z}_+
 \end{equation}
 \end{block}
-\pause
+
 \begin{block}{Propriedades}
 \begin{itemize}
     \itemsep7.5pt\parskip0pt\parsep0pt
@@ -252,7 +252,7 @@ Também chamado de Modelo de mistura \textit{gamma-Poisson} (BN)
 * Distribuição marginal	Binomial Negativa $(\pi = 1/(1+\phi),\ k)$
 * Acomoda somente superdispersão
 * Função de ligação canônica problemática
-
+\vspace{0.5cm}
 No R
 
 ```{r, eval = FALSE, echo = TRUE}
@@ -276,7 +276,7 @@ $\phi > 1 \rightarrow$ superdisperso
 
 * Estimação de $\phi$  
 $\hat{\phi} = \sum r_{pad}^2/(n-p)$  
-
+\vspace{0.5cm}
 * No R
 
 ```{r, eval = FALSE, echo = TRUE}
@@ -350,18 +350,20 @@ São chamados também de modelos condicionais ou truncados
         \pi& \text{se } y = 0,\\
         (1 - \pi) \frac{P_Y(y)}{1 - P_Y(0)} & \text{se } y = 1, 2, \dots
     \end{dcases*}
-\end{equation} \pause
+\end{equation}
 
 \vspace{0.5cm}
 Sendo $P_Y$ uma distribuição de probabilidades associada às contagens e
 $\pi$ a probabilidade associada às contagens 0.
+
+
 
 ```{r, eval = FALSE, echo = TRUE}
 
 ## Political Science Computational Laboratory, Stanford University
 library(pscl)
 
-hurdle(resp ~ pi_preditor | f_preditor, dist = "poisson")
+hurdle(resp ~ py_preditor | pi_preditor, dist = "poisson")
 
 ```
 
@@ -375,18 +377,20 @@ São chamados também de modelos de mistura
         \pi + (1 - \pi) P_Y(0) & \text{se } y = 0,\\
         (1 - \pi) P_Y(y)       & \text{se } y = 1, 2, \dots
     \end{dcases*}
-\end{equation} \pause
+\end{equation}
 
 \vspace{0.5cm}
 Sendo $P_Y$ uma distribuição de probabilidades associada às contagens e
 $\pi$ a probabilidade associada às contagens 0.
+
+
 
 ```{r, eval = FALSE, echo = TRUE}
 
 ## Political Science Computational Laboratory, Stanford University
 library(pscl)
 
-zeroinfl(resp ~ pi_preditor | f_preditor, dist = "poisson")
+zeroinfl(resp ~ py_preditor | pi_preditor, dist = "poisson")
 
 ```
 
@@ -404,7 +408,7 @@ zeroinfl(resp ~ pi_preditor | f_preditor, dist = "poisson")
 onde $Z(\lambda, \nu) = \sum_{j=0}^\infty \frac{\lambda^j}{(j!)^\nu}$; e
 \hspace{0.5cm} $\lambda > 0$ e $\nu \geq 0$
 \end{center}
-\end{block}\pause
+\end{block}
 
 \begin{columns}[t,onlytextwidth]
 \column{.48\textwidth}
@@ -414,7 +418,7 @@ onde $Z(\lambda, \nu) = \sum_{j=0}^\infty \frac{\lambda^j}{(j!)^\nu}$; e
     \item $\frac{P(Y = y - 1)}{P(Y = y)} = \frac{y^\nu}{\lambda}$
     \item $E(Y^\nu) = \lambda$
 \end{itemize}
-\end{block}\pause
+\end{block}
 
 \column{.48\textwidth}
 
@@ -439,9 +443,9 @@ onde $Z(\lambda, \nu) = \sum_{j=0}^\infty \frac{\lambda^j}{(j!)^\nu}$; e
 \end{center}
 
 onde $G(y, \theta_1, \theta_2)$ é a distribuição de densidade acumulada
-até o ponto $y$ da Gamma de parâmetros $theta_1$ e $\theta_2$; e $\alpha
+até o ponto $y$ da Gamma de parâmetros $\theta_1$ e $\theta_2$; e $\alpha
 > 0$ e $\beta > 0$ 
-\end{block}\pause
+\end{block}
 
 \begin{columns}[t,onlytextwidth]
 \column{.48\textwidth}
@@ -452,7 +456,7 @@ até o ponto $y$ da Gamma de parâmetros $theta_1$ e $\theta_2$; e $\alpha
     que o tempo entre eventos agora pode ser um Gamma com parâmetros
     estimados. 
 \end{itemize}
-\end{block}\pause
+\end{block}
 
 \column{.48\textwidth}
 
@@ -477,7 +481,7 @@ até o ponto $y$ da Gamma de parâmetros $theta_1$ e $\theta_2$; e $\alpha
 
 \begin{equation}
     Pr(Y = y) = \int_{D_D} [Y \mid X,b_i][b_i]db_i
-\end{equation} \pause
+\end{equation} 
 
 Onde $D$ é a distribuição associada aos efeitos aleatórios e $D_D$ é o
 suporte da distribuição.
