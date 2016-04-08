@@ -1,0 +1,242 @@
+% Análise do Número de Ninfas de Mosca-Branca em Lavoura de Soja
+% Eduardo E. R. Junior - MEETUP USER-SP
+% `r format(Sys.time(), "%d de %B de %Y")`
+
+```{r, include = FALSE}
+
+##-------------------------------------------
+## Definições knitr
+library(knitr)
+
+opts_chunk$set(
+    cache = FALSE,
+    fig.path = "figures/",
+    cache.path = "cache/",
+    fig.align = "center",
+    dev.args = list(family = "Palatino")
+    )
+
+##-------------------------------------------
+## Definições lattice
+library(lattice)
+library(latticeExtra)
+
+ps <- list(
+    box.rectangle = list(fill = c("gray70")),
+    box.umbrella = list(lty = 1),
+    dot.symbol = list(pch = 19),
+    dot.line = list(col = "gray50", lty = 3),
+    plot.symbol = list(pch = 19),
+    strip.background = list(col = c("gray80", "gray50"))
+    )
+trellis.par.set(ps)
+
+```
+
+***
+
+Esta vinheta de análise exemplifica o caso de um conjunto de dados, cujo
+a variável de interesse é o número de ninfas de Mosca-Branca em plantas
+de soja, esta variável condicionada as demais apresenta superdispersão,
+ou seja, $E[Y|X] < V[Y|X]$. Neste documento serão apresentados duas
+alternativas para análise via modelo Binomial-Negativo e via
+Quasi-Verossimilhança.
+
+# Conjunto de Dados #
+
+Os dados a serem analisados são referentes à um experimento conduzido em
+casa de vegetação sob delineamento de blocos casualizados. Foram
+avaliadas no experimento o número de ninfas da praga Mosca-Branca em
+plantas de soja de diferentes cultivares. Ocorreram 6 avaliações nos 38
+dias de estudo. As variáveis presentes no conjunto de dados `ninfa.rda`
+são:
+
+* `dias:` Número de dias após o início do experimento;
+* `cult:` Cultivares de soja avaliadas, são quatro cultivas (_B9_,
+  _B3R_, _B5R_, _B6R_);
+* `bloc:` Blocos utilizados para controle de variação local; e
+* `ntot:` Número de ninfas de mosca-branca na planta.
+
+No R o conjunto possui a seguinte estrutura
+
+```{r}
+
+## Carrega o conjunto de dados
+load("ninfas.rda")
+str(ninfas)
+
+```
+
+```{r}
+
+## Visualizando graficamente
+xyplot(ntot ~ dias | cult, data = ninfas,
+       jitter.x = TRUE, grid = TRUE)
+
+## Verificando a relação média-variância
+mv <- aggregate(ntot ~ dias + cult, data = ninfas,
+                FUN = function(x)
+                    c(mean = mean(x), var = var(x)))
+
+xlim <- ylim <- extendrange(c(mv$ntot), f = 0.03)
+xyplot(ntot[, "var"] ~ ntot[, "mean"],
+       data = mv, grid = TRUE,
+       type = c("p", "smooth"),
+       xlab = "Média amostral",
+       ylab = "Variância amostral") +
+    layer(panel.abline(a = 0, b = 1, lty = 2))
+
+
+```
+
+# Modelagem Estatística #
+
+## Ajuste do modelo ##
+
+```{r}
+
+## Preditores Considerados
+f0 <- ntot ~ bloc
+f1 <- ntot ~ bloc + cult
+f2 <- ntot ~ bloc + cult + dias
+f3 <- ntot ~ bloc + cult * dias
+
+## Ajustando os modelos Poisson
+m0P <- glm(f0, data = ninfas, family = poisson)
+m1P <- glm(f1, data = ninfas, family = poisson)
+m2P <- glm(f2, data = ninfas, family = poisson)
+m3P <- glm(f3, data = ninfas, family = poisson)
+
+## Ajustando os modelos Quasi-Poisson
+m0Q <- glm(f0, data = ninfas, family = quasipoisson)
+m1Q <- glm(f1, data = ninfas, family = quasipoisson)
+m2Q <- glm(f2, data = ninfas, family = quasipoisson)
+m3Q <- glm(f3, data = ninfas, family = quasipoisson)
+
+## Ajustando os modelos Binomial Negativo
+library(MASS)
+m0B <- glm.nb(f0, data = ninfas)
+m1B <- glm.nb(f1, data = ninfas)
+m2B <- glm.nb(f2, data = ninfas)
+m3B <- glm.nb(f3, data = ninfas)
+
+```
+
+```{r}
+
+##-------------------------------------------
+## Testes de razão de verossimilhanças
+anova(m0P, m1P, m2P, m3P, test = "Chisq")
+anova(m0Q, m1Q, m2Q, m3Q, test = "Chisq")
+anova(m0B, m1B, m2B, m3B, test = "Chisq")
+
+```
+
+```{r}
+
+## Lista dos modelos ajustados
+modelList <- list("Poisson" = m3P, "Quasi" = m3Q, "BinNeg" = m3B)
+
+## Comparando via logVerossimilhança
+sapply(modelList, logLik)
+
+## Estimativas dos parâmetros
+## lapply(modelList, function(x)
+##     cbind("Est" = coef(x), "SE" = sqrt(diag(vcov(x)))))
+car::compareCoefs(m3P, m3Q, m3B)
+
+```
+
+```{r}
+
+## Resumo do modelo Quasi-Poisson
+summary(m3Q)
+
+## Resumo do modelo Binomial Negativo
+summary(m3B)
+
+```
+
+## Análise de diagnóstico ##
+
+```{r}
+
+## Gráficos padrão, cuidado!
+par(mfrow = c(2, 3))
+plot(m3Q, which = 1:6)
+
+par(mfrow = c(2, 3))
+plot(m3B, which = 1:6)
+
+## Análise de diagnóstico
+boot::glm.diag.plots(m3Q)
+boot::glm.diag.plots(m3B)
+
+## Verificar
+hnp::hnp(m3Q)
+hnp::hnp(m3B)
+
+```
+
+## Predição ##
+
+```{r, cache = TRUE}
+
+##-------------------------------------------
+## Predição
+
+## Obtendo o preditor linear que considera o efeito médio de blocos
+library(doBy)
+X <- LSmatrix(lm(ntot ~ bloc + cult * dias, ninfas),
+              effect = c("cult", "dias"))
+
+## Estimando as contagens médias com intervalo de confiança
+library(multcomp)
+
+## pela Poisson
+aux <- exp(confint(glht(m3P, linfct = X),
+               calpha = univariate_calpha())$confint)
+colnames(aux) <- c("fit", "lwr", "upr")
+pred <- aux
+
+## pela Quasi-Poisson
+aux <- exp(confint(glht(m3Q, linfct = X),
+                   calpha = univariate_calpha())$confint)
+## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
+pred <- rbind(pred, aux)
+
+## pela Binomial Negativa
+aux <- exp(confint(glht(m3B, linfct = X),
+                   calpha = univariate_calpha())$confint)
+## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
+pred <- rbind(pred, aux)
+
+
+aux <- expand.grid(cult = levels(ninfas$cult),
+                    dias = unique(ninfas$dias))
+pred <- cbind(rbind(aux, aux, aux), pred)
+pred$modelo <- as.factor(rep(c("1.Poisson", "2.Quasi", "3.BinNeg"),
+                           each = nrow(aux)))
+pred <- pred[, c(6, 1:5)]
+
+## Para fazer o painel com segmentos
+source(paste0("https://gitlab.c3sl.ufpr.br/leg/legTools/raw/",
+              "issue%2315/R/panel.segplot.by.R"))
+
+xyplot(ntot ~ dias | cult, data = ninfas,
+       as.table = TRUE, grid = TRUE,
+       ylim = c(-10, max(pred$upr)*1.1),
+       key = list(lines = list(lty = 1),
+                  text = list(c("Poisson", "Quasi-Poisson",
+                                "Binomial Negativa")))) +
+    as.layer(
+        segplot(dias ~ lwr + upr | cult,
+        centers = fit, data = pred,
+        horizontal=FALSE,
+        draw=FALSE, col = 1,
+        panel = panel.segplot.by, groups = pred$model, f = 0.15,
+        as.table = TRUE,  pch = 3)
+    )
+
+
+```
