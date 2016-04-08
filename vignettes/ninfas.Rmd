@@ -135,7 +135,7 @@ anova(m0B, m1B, m2B, m3B, test = "Chisq")
 ```{r}
 
 ## Lista dos modelos ajustados
-modelList <- list("Poisson" = m3P, "Quasi" = m3Q, "BinNeg" = m3B)
+modelList <- list("Poisson" = m2P, "Quasi" = m2Q, "BinNeg" = m2B)
 
 ## Comparando via logVerossimilhança
 sapply(modelList, logLik)
@@ -143,17 +143,17 @@ sapply(modelList, logLik)
 ## Estimativas dos parâmetros
 ## lapply(modelList, function(x)
 ##     cbind("Est" = coef(x), "SE" = sqrt(diag(vcov(x)))))
-car::compareCoefs(m3P, m3Q, m3B)
+car::compareCoefs(m2P, m2Q, m2B)
 
 ```
 
 ```{r}
 
 ## Resumo do modelo Quasi-Poisson
-summary(m3Q)
+summary(m2Q)
 
 ## Resumo do modelo Binomial Negativo
-summary(m3B)
+summary(m2B)
 
 ```
 
@@ -163,18 +163,18 @@ summary(m3B)
 
 ## Gráficos padrão, cuidado!
 par(mfrow = c(2, 3))
-plot(m3Q, which = 1:6)
+plot(m2Q, which = 1:6)
 
 par(mfrow = c(2, 3))
-plot(m3B, which = 1:6)
+plot(m2B, which = 1:6)
 
 ## Análise de diagnóstico
-boot::glm.diag.plots(m3Q)
-boot::glm.diag.plots(m3B)
+boot::glm.diag.plots(m2Q)
+boot::glm.diag.plots(m2B)
 
-## Verificar
-hnp::hnp(m3Q)
-hnp::hnp(m3B)
+## Gráficos qauntil-quantil com envelopes simulados
+hnp::hnp(m2Q)
+hnp::hnp(m2B)
 
 ```
 
@@ -206,37 +206,35 @@ aux <- exp(confint(glht(m3Q, linfct = X),
 pred <- rbind(pred, aux)
 
 ## pela Binomial Negativa
-aux <- exp(confint(glht(m3B, linfct = X),
+aux <- family(m2B)$linkinv(confint(glht(m3B, linfct = X),
                    calpha = univariate_calpha())$confint)
 ## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
 pred <- rbind(pred, aux)
 
 
 aux <- expand.grid(cult = levels(ninfas$cult),
-                    dias = unique(ninfas$dias))
+                   dias = unique(ninfas$dias))
 pred <- cbind(rbind(aux, aux, aux), pred)
 pred$modelo <- as.factor(rep(c("1.Poisson", "2.Quasi", "3.BinNeg"),
                            each = nrow(aux)))
 pred <- pred[, c(6, 1:5)]
+pred <- pred[order(pred$cult, pred$dias, pred$modelo), ]
 
 ## Para fazer o painel com segmentos
 source(paste0("https://gitlab.c3sl.ufpr.br/leg/legTools/raw/",
               "issue%2315/R/panel.segplot.by.R"))
 
-xyplot(ntot ~ dias | cult, data = ninfas,
-       as.table = TRUE, grid = TRUE,
-       ylim = c(-10, max(pred$upr)*1.1),
-       key = list(lines = list(lty = 1),
-                  text = list(c("Poisson", "Quasi-Poisson",
-                                "Binomial Negativa")))) +
-    as.layer(
-        segplot(dias ~ lwr + upr | cult,
+segplot(dias ~ lwr + upr | cult,
         centers = fit, data = pred,
-        horizontal=FALSE,
-        draw=FALSE, col = 1,
+        horizontal=FALSE, draw=FALSE,
+        lwd = 2, grid = TRUE,
         panel = panel.segplot.by, groups = pred$model, f = 0.15,
-        as.table = TRUE,  pch = 3)
-    )
-
+        pch = 1:nlevels(pred$model)+3,
+        as.table = TRUE,
+        key = list(type = "o", divide = 1,
+                   lines=list(pch = 1:nlevels(pred$model)+3,
+                              lty = 1),
+                   text = list(c("Poisson", "Quasi-Poisson",
+                                 "Binomial Negativa"))))
 
 ```

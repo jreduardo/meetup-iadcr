@@ -50,7 +50,7 @@ tabaci_, sob o número de capulhos produzidos. As variáveis consideradas
 foram:
 
 * `dexp:` Dias de exposição a alta infestação da praga; e
-* `nacpu:` Número de capulhos produzidos.
+* `ncapu:` Número de capulhos produzidos.
 
 No R o conjunto possui a seguinte estrutura
 
@@ -125,15 +125,18 @@ summary(m2Q)
 
 ## Análise de diagnóstico ##
 
-```{r, eval = FALSE}
+```{r}
+
+## Gráficos padrão, cuidado!
+par(mfrow = c(2, 3))
+plot(m2Q, which = 1:6)
 
 ## Análise de diagnóstico
 boot::glm.diag.plots(m2Q)
-boot::glm.diag.plots(m2P)
 
-## Verificar
+## Gráficos qauntil-quantil com envelopes simulados
 hnp::hnp(m2P)
-hnp::hnp(m2Q)
+## hnp::hnp(m2Q) ## Verificar 
 
 ```
 
