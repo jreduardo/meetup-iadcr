@@ -76,7 +76,7 @@ xyplot(nanom/ncel ~ l2taxa, groups = dose,
        grid = TRUE, type = c("p", "spline"),
        xlab = expression(log[2]~taxa~de~liberação),
        ylab = "Proporção de anomalias",
-       uto.key = list(space = "right", title = "dose",
+       auto.key = list(space = "right", title = "dose",
                        cex.title = 1))
 
 ```
@@ -171,8 +171,8 @@ xyplot(nanom/ncel ~ l2taxa, groups = dose,
        grid = TRUE,
        xlab = expression(log[2]~taxa~de~liberação),
        ylab = "Proporção de anomalias",
-       auto.key = list(space = "right", title = "dose",
-                       cex.title = 1)) +
+       auto.key = list(title = "dose", columns = 3,
+                       cex.title = 1, lines = TRUE)) +
     as.layer(
         xyplot(fit ~ l2taxa,
                groups = dose, data = pred,
@@ -200,7 +200,11 @@ lambda <- predict(m4, newdata = pred, type = "response")
 pred <- cbind(pred, lambda)
 pred$px <- with(pred, dpois(x, lambda))
 
-xyplot(px ~ x | l2taxa, groups = dose,
+## Definindo nome para os splits da lattice
+fl <- as.expression(lapply(unique(pred$l2taxa),
+    function(x){ bquote(l2taxa==.(x)) }))
+
+xyplot(px ~ x | factor(l2taxa), groups = dose,
        data = subset(pred, dose == 2.5),
        auto.key = list(title = "dose", lines = TRUE, points = FALSE,
                        columns = 3, cex.title = 1),
@@ -208,7 +212,9 @@ xyplot(px ~ x | l2taxa, groups = dose,
        as.table = TRUE,
        lwd = 2.5, xlab = "y: contagem de anomalias cromossômicas",
        ylab = expression(P(Y==y)),
-       ylim = c(0, max(pred$px))*1.1) +
+       ylim = c(0, max(pred$px))*1.1,
+       strip = strip.custom(bg = "gray90",
+                            factor.levels = fl)) +
     as.layer(
         xyplot(px ~ (x - 0.14) | l2taxa, groups = dose, lwd = 2.5,
                data = subset(pred, dose == 1), type = "h")

@@ -162,7 +162,10 @@ aux <- with(aux, fit + se.fit %*%
 pred <- cbind(pred, exp(aux))
 
 xyplot(ncapu ~ dexp, data = capulhos,
-       jitter.x = TRUE) +
+       jitter.x = TRUE,
+       key = list(lines = list(lty = 1, lwd = 2, col = 1:2),
+                  text = list(c("Poisson", "Quasi-Poisson")))
+       ) +
     as.layer(
         xyplot(Pfit + Plwr + Pupr ~ dexp, data = pred,
                type = "l", col = 1, lty = c(1, 3, 3), lwd = 2)

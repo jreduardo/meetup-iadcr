@@ -231,7 +231,7 @@ segplot(dias ~ lwr + upr | cult,
         pch = 1:nlevels(pred$model)+3,
         as.table = TRUE,
         key = list(type = "o", divide = 1,
-                   lines=list(pch = 1:nlevels(pred$model)+3,
+                   lines = list(pch = 1:nlevels(pred$model)+3,
                               lty = 1),
                    text = list(c("Poisson", "Quasi-Poisson",
                                  "Binomial Negativa"))))
