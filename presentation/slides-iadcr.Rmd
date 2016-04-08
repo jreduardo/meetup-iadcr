@@ -1,7 +1,9 @@
 ---
 title: Introdução à Análise de Dados de Contagem com R
 author: Eduardo E. R. Junior
-date: "`r format(Sys.time(), '%d de %B de %Y')`"
+date: |
+    | `r format(Sys.time(), '%d de %B de %Y')`
+    | \url{edujrrib@gmail.com}
 fontsize: "10pt"
 output: 
   beamer_presentation:
