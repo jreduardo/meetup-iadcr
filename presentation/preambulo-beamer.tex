@@ -125,7 +125,7 @@
 \renewcommand{\ttdefault}{ubuntumono}
 \renewcommand{\ttfamily}{\fontUbuntuMono}
 \makeatletter
-\def\verbatim@font{\small\fontUbuntuMono}
+\def\verbatim@font{\normalsize\fontUbuntuMono}
 \makeatother
 
 %% ======================================================================
@@ -134,10 +134,6 @@
 \usepackage{etoolbox}
 \makeatletter
 \preto{\@verbatim}{\topsep=1pt \partopsep=1pt }
-\makeatother
-
-\makeatletter
-\def\verbatim@font{\footnotesize\ttfamily}
 \makeatother
 
 \let\oldv\verbatim
