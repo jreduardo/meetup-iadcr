@@ -35,7 +35,7 @@ opts_chunk$set(
     tidy = FALSE,
     cache = TRUE,
     echo = FALSE,
-    size = "\\scriptsize",
+    size = "\\normalsize",
     out.width = "1\\textwidth",
     fig.path = "figures/",
     cache.path = "cache/",
@@ -75,7 +75,7 @@ library(compoisson)
     \textcolor{url}{D}ados de 
     \textcolor{url}{C}ontagem com
     \textcolor{url}{R} -
-  \href{https://github.com/JrEduardo/iguiR}{iadcr}
+  \href{https://github.com/JrEduardo/iguiR}{meetup-iadcr}
   }
 \end{center}
 
@@ -88,8 +88,20 @@ library(compoisson)
 
 ###  ###
 
-* Dados de contagem (Definição, objetivos na análise)
-* Modelos de regresão (ideia geral)
+Representam o número de ocorrências de um evento de interesse em um
+domínio específico.
+
+Se $Y$ é uma v.a de contagem, $y \in \mathbb{Z}_+$, ou seja, $y = 0, 1,
+2, ...$
+
+\vspace{0.5cm} \pause
+
+Exemplos:
+
+* Número de filhos por casal;
+* Número de indivíduos infectados por uma doença;
+* Número de insetos mortos após $k$ dias da aplicação de inseticida;
+* ...
 
 <!-- ------------------------------------------- -->
 # Modelo Poisson #
@@ -98,7 +110,7 @@ library(compoisson)
 
 \begin{block}{Densidade de probabilidade}
 \begin{equation} 
-  \Pr(Y = y \mid \lambda) = \frac{\lambda^y}{y! e^\lambda} \quad y \in
+  \Pr(Y = y \mid \lambda) = \frac{\lambda^y}{y! e^\lambda}, \quad y \in
   \mathbb{Z}_+
 \end{equation}
 \end{block}
@@ -142,8 +154,8 @@ xyplot(px ~ xx | caso, type = c("h", "g"),
 
 \begin{equation*}
     \begin{split}
-        Y_i \mid X_i \sim \text{Poisson}(\mu_i = \lambda_i t_i) \\
-        g(\lambda_i t_i) = \eta_i =  &X_i\beta \\
+        Y_i \mid &X_i, t_i \sim \text{Poisson}(\mu_i = \lambda_i t_i) \\
+        &g(\lambda_i t_i) = \eta_i =  X_i\beta \\
     \end{split}
 \end{equation*}
 
@@ -154,21 +166,33 @@ Sendo $g$ uma função monótona que,
 
 As duas funções de ligação mais comuns são $\log{\mu}$ e $\sqrt{\mu}$
 
-###  ###
+### Modelo log-linear Poisson ###
 
 \begin{figure}[!ht]
 	\includegraphics[scale=1]{./figures/reg-poisson.pdf}
     \caption{Representação esquemática de um modelo de regressão Poisson}
 \end{figure}
 
-###  ###
+### Estimação ###
 
-* Propriedades (equidispersão, relação exponencial, razão de
-  prob. consecutivas)
-* Regressão (familía exponencial, função de ligação, interpretação dos
-  parâmetros)
-* IWLS, Medidas de diagnóstico
-* Exemplo prático
+* Via maximização da log-Verossimimilhança  
+$ll(\beta \mid X) = y X\beta - X\beta - \log(X!)$
+
+\vspace{0.5cm}
+
+* Via Mínimos Quadrados Ponderados Iterativamente  
+Utiliza as propriedades da familía exponencial  
+$\beta^{m+1} = (X^t W^m X)^{-1} X^t W^m z^m$
+
+\vspace{0.5cm}
+
+* No R
+
+```{r, eval = FALSE, echo = TRUE}
+
+model <- glm(y ~ preditor, family = poisson)
+
+```
 
 ### Estudos de caso ###
 
@@ -218,15 +242,48 @@ xyplot(py.com ~ c(yy - 0.14) | caso, type = c("h", "g"),
 
 ### Modelo Binomial Negativo ###
 
-* Modelo Binomial Negativo
-    * Definição
-    * Vantagens e desvantagens
+Também chamado de Modelo de mistura \textit{gamma-Poisson} (BN)
+
+\begin{align*}
+&Y \sim Poisson(\lambda)\\
+&\lambda \sim Gamma(\mu, k = \phi \mu)
+\end{align*}
+
+* Distribuição marginal	Binomial Negativa $(\pi = 1/(1+\phi),\ k)$
+* Acomoda somente superdispersão
+* Função de ligação canônica problemática
+
+No R
+
+```{r, eval = FALSE, echo = TRUE}
+
+## Support Functions and Datasets for Venables and Ripley's MASS
+library(MASS)
+model <- glm.nb(y ~ preditor)
+
+```
 
 ### Modelos de Quasi-Verossimilhança ###
 
-* Modelo Quasi-Poisson
-    * Definição
-    * Vantagens e desvantagens
+* Estimação baseada em momentos  
+$E(Y|X) = \exp{X\beta}$  
+$V(Y|X) = \phi\exp{X\beta}$  
+
+* Interpretação de $\phi$  
+$0 < \phi < 1 \rightarrow$ subdisperso  
+$\phi = 1 \rightarrow$ equidisperso  
+$\phi > 1 \rightarrow$ superdisperso  
+
+* Estimação de $\phi$  
+$\hat{\phi} = \sum r_{pad}^2/(n-p)$  
+
+* No R
+
+```{r, eval = FALSE, echo = TRUE}
+
+model <- glm(y ~ preditor, family = quasipoisson)
+
+```
 
 ### Estudos de caso ###
 
@@ -244,21 +301,220 @@ xyplot(py.com ~ c(yy - 0.14) | caso, type = c("h", "g"),
 
 ###  ###
 
-* Modelo _Hurdle_ (de barreira)
-    * Definição
+```{r, fig.cap = "Contagens que apresentam excesso de zeros"}
 
-* Modelo _Zero Inflated Poisson_ (mistura)
-    * Definição
+set.seed(100)
+n <- 500
+rb <- rbinom(n, 1, 0.98)
+for (i in 1:n) {
+    rb[i] <- ifelse(rb[i] == 0, 0, rcomp(1, 10, 1.5))
+}
 
-* Exemplo Prático
+y <- rb
+py_real <- prop.table(table(y))
+
+m0 <- glm(y ~ 1, family = poisson)
+py_pois<- dpois(sort(unique(y)), exp(m0$coef))
+
+m1 <- glm(y ~ 1, quasipoisson)
+coefs <- sapply(coef(m1), exp)
+py_quasi <- dpois(sort(unique(y)), exp(m0$coef))
+## py_cmp <- dcom(sort(unique(y)), coefs[1], coefs[2])
+
+yu <- sort(unique(y))
+xyplot(py_real ~ yu, type = "h",
+       lwd = 3, grid = T, col = 1,
+       xlab = "y",
+       ylab = expression(P(Y==y)),
+       key = list(space = "right",
+                  lines = list(
+                      lty=1, col = c(1, 4, 2), lwd = 3),
+                  text = list(c("Real", "Poisson", "Quasi"))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.lines(x = x - 0.1, y = py_pois, type = "h",
+                    col = 4, lwd = 3)
+           panel.lines(x = x + 0.1, y = py_quasi, type = "h",
+                       col = 2, lwd = 3)
+       })
+
+```
+
+### Modelos de Barreia _Hurdle models_ ###
+
+São chamados também de modelos condicionais ou truncados
+
+\begin{equation}
+    Pr(Y = y) =
+    \begin{dcases*}
+        \pi& \text{se } y = 0,\\
+        (1 - \pi) \frac{P_Y(y)}{1 - P_Y(0)} & \text{se } y = 1, 2, \dots
+    \end{dcases*}
+\end{equation} \pause
+
+\vspace{0.5cm}
+Sendo $P_Y$ uma distribuição de probabilidades associada às contagens e
+$\pi$ a probabilidade associada às contagens 0.
+
+```{r, eval = FALSE, echo = TRUE}
+
+## Political Science Computational Laboratory, Stanford University
+library(pscl)
+
+hurdle(resp ~ pi_preditor | f_preditor, dist = "poisson")
+
+```
+
+### Modelos de Inflação _Zero Inflated Models_ ###
+
+São chamados também de modelos de mistura
+
+\begin{equation}
+    Pr(Y = y) =
+    \begin{dcases*}
+        \pi + (1 - \pi) P_Y(0) & \text{se } y = 0,\\
+        (1 - \pi) P_Y(y)       & \text{se } y = 1, 2, \dots
+    \end{dcases*}
+\end{equation} \pause
+
+\vspace{0.5cm}
+Sendo $P_Y$ uma distribuição de probabilidades associada às contagens e
+$\pi$ a probabilidade associada às contagens 0.
+
+```{r, eval = FALSE, echo = TRUE}
+
+## Political Science Computational Laboratory, Stanford University
+library(pscl)
+
+zeroinfl(resp ~ pi_preditor | f_preditor, dist = "poisson")
+
+```
 
 ## Outras abordagens ##
 
-###  ###
+### COM-Poisson ###
 
-* Modelo _COM-Poisson_
-* Modelo _Gamma-Count_
-* Com efeito aleatório
+\begin{block}{Densidade de probabilidade}
+\begin{center}
+\begin{equation} 
+  \Pr(Y = y \mid \lambda, \nu) = \frac{\lambda^y}{(y!)^\nu Z(\lambda,
+  \nu)}, \quad y \in \mathbb{Z}_+
+\end{equation}
+
+onde $Z(\lambda, \nu) = \sum_{j=0}^\infty \frac{\lambda^j}{(j!)^\nu}$; e
+\hspace{0.5cm} $\lambda > 0$ e $\nu \geq 0$
+\end{center}
+\end{block}\pause
+
+\begin{columns}[t,onlytextwidth]
+\column{.48\textwidth}
+\begin{block}{Propriedades}
+\begin{itemize}
+    \itemsep7.5pt\parskip0pt\parsep0pt
+    \item $\frac{P(Y = y - 1)}{P(Y = y)} = \frac{y^\nu}{\lambda}$
+    \item $E(Y^\nu) = \lambda$
+\end{itemize}
+\end{block}\pause
+
+\column{.48\textwidth}
+
+\begin{block}{Casos particulares}
+\begin{itemize}
+	\item Distribuição Poisson, \\ quando $\nu = 1$
+	\item Distribuição Bernoulli, \\ quando $\nu \rightarrow \infty$
+	\item Distribuição Geométrica, \\ quando $\nu = 0,\ \lambda < 1$
+\end{itemize}
+\end{block}
+
+\end{columns}
+
+### Modelo _Gamma-Count_ ###
+
+\begin{block}{Densidade de probabilidade}
+\begin{center}
+\begin{equation} 
+  \Pr(Y = y \mid \alpha, \beta) = G(y, n\alpha, \beta T) - G(y,
+  n\alpha + \alpha, \beta T), \quad y \in \mathbb{Z}_+
+\end{equation}
+\end{center}
+
+onde $G(y, \theta_1, \theta_2)$ é a distribuição de densidade acumulada
+até o ponto $y$ da Gamma de parâmetros $theta_1$ e $\theta_2$; e $\alpha
+> 0$ e $\beta > 0$ 
+\end{block}\pause
+
+\begin{columns}[t,onlytextwidth]
+\column{.48\textwidth}
+\begin{block}{Propriedades}
+\begin{itemize}
+    \itemsep7.5pt\parskip0pt\parsep0pt
+    \item Generaliza a relação entre Poisson e Exponencial, considerando
+    que o tempo entre eventos agora pode ser um Gamma com parâmetros
+    estimados. 
+\end{itemize}
+\end{block}\pause
+
+\column{.48\textwidth}
+
+\begin{block}{Casos particulares}
+\begin{itemize}
+	\item Distribuição Poisson, \\ quando $\alpha = 1$
+\end{itemize}
+\end{block}
+
+\end{columns}
+
+
+### Efeitos Aleatórios ###
+
+\begin{equation*}
+    \begin{split}
+        Y \mid b \sim f_*(&\mu, \phi) \\
+        g(\mu) = &\beta_0 + b_i \\
+        b_i \sim &D(\Sigma)
+    \end{split}
+\end{equation*}
+
+\begin{equation}
+    Pr(Y = y) = \int_{D_D} [Y \mid X,b_i][b_i]db_i
+\end{equation} \pause
+
+Onde $D$ é a distribuição associada aos efeitos aleatórios e $D_D$ é o
+suporte da distribuição.
+
+* Necessários, métodos de integração numérica
+    + Aproximação de Laplace  
+    + Quadratura Gaussiana  
+    + Monte Carlo (e.g. MCMC)
+
+### Entre outros ###
+
 * Modelos para dados censurados
 * Modelos para respostas correlacionadas
 * ...
+
+
+### Participe! ###
+
+\begin{center}
+\begin{figure}[!ht]
+	\includegraphics[scale=0.5]{./figures/RBras2016.jpg}
+\end{figure}
+\end{center}
+\vspace{1cm}
+
+\textbf{Minicurso:}
+    \textcolor{url}{M}odelos de
+    \textcolor{url}{R}egressão para
+    \textcolor{url}{D}ados de 
+    \textcolor{url}{C}ontagem com
+    \textcolor{url}{R} -
+    \textcolor{url}{\texttt{MRDCr}}
+
+\textbf{Autores:} Walmes M. Zeviani, Eduardo E. R. Junior, Cesar A. Taconelli
+
+###  ###
+
+\begin{center}
+\Large \bf Obrigado!
+\end{center}
