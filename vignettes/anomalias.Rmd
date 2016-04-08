@@ -47,12 +47,13 @@ do parâmetros e predição.
 
 Os dados a serem analisados são referentes a um experimento
 dose-resposta onde avaliou-se o número de cromossomos anormais sob
-efeito da quantidade de dose aplicada e taxa de liberação da dose. Ainda
-neste estudo os organismos avaliados apresentam números totais de
-células diferentes, este deve ser incluído na análise (no caso Poisson
-como _offset_). As variáveis do conjunto de dados são:
+efeito da quantidade de dose aplicada e taxa de liberação da dose em
+amostras de sangue do indivíduos. Ainda neste estudo os organismos
+avaliados apresentam números totais de células diferentes, este deve ser
+incluído na análise (no caso Poisson como _offset_). As variáveis do
+conjunto de dados são:
 
-* `ncel:` Número de células no organismo, em centenas;
+* `ncel:` Número de células, em centenas;
 * `dose:` Quantidade de dose aplicada (1, 2.5, 5);
 * `l2taxa:` Logaritmo de base 2 da taxa de liberação da dose; e
 * `nanom:` Número de anomalias cromossômicas.

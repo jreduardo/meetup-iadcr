@@ -180,7 +180,7 @@ hnp::hnp(m2B)
 
 ## Predição ##
 
-```{r, cache = TRUE}
+```{r}
 
 ##-------------------------------------------
 ## Predição
@@ -210,7 +210,6 @@ aux <- family(m2B)$linkinv(confint(glht(m3B, linfct = X),
                    calpha = univariate_calpha())$confint)
 ## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
 pred <- rbind(pred, aux)
-
 
 aux <- expand.grid(cult = levels(ninfas$cult),
                    dias = unique(ninfas$dias))
