@@ -64,7 +64,7 @@ library(compoisson)
       \includegraphics[scale=0.07]{./figures/github_icon}\\
 \end{flushright}
 \column{.7\textwidth}
-    \url{https://github.com/jreduardo/iadcr}
+    \url{https://github.com/jreduardo/meetup-iadcr}
 \end{columns}
 
 \begin{center}
@@ -75,7 +75,7 @@ library(compoisson)
     \textcolor{url}{D}ados de 
     \textcolor{url}{C}ontagem com
     \textcolor{url}{R} -
-  \href{https://github.com/JrEduardo/iguiR}{meetup-iadcr}
+  \href{https://github.com/JrEduardo/meetup-iadcr}{meetup-iadcr}
   }
 \end{center}
 
@@ -181,7 +181,7 @@ $ll(\beta \mid X) = y X\beta - X\beta - \log(X!)$
 \vspace{0.5cm}
 
 * Via Mínimos Quadrados Ponderados Iterativamente  
-Utiliza as propriedades da familía exponencial  
+Utiliza as propriedades da família exponencial  
 $\beta^{m+1} = (X^t W^m X)^{-1} X^t W^m z^m$
 
 \vspace{0.5cm}

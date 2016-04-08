@@ -54,7 +54,7 @@ como _offset_). As variáveis do conjunto de dados são:
 
 * `ncel:` Número de células no organismo, em centenas;
 * `dose:` Quantidade de dose aplicada (1, 2.5, 5);
-* `l2taxa:` Logarítmo de base 2 da taxa de liberação da dose; e
+* `l2taxa:` Logaritmo de base 2 da taxa de liberação da dose; e
 * `nanom:` Número de anomalias cromossômicas.
 
 No R o conjunto possui a seguinte estrutura
