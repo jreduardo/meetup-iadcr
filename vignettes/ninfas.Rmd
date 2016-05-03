@@ -187,26 +187,26 @@ hnp::hnp(m2B)
 
 ## Obtendo o preditor linear que considera o efeito médio de blocos
 library(doBy)
-X <- LSmatrix(lm(ntot ~ bloc + cult * dias, ninfas),
+X <- LSmatrix(lm(ntot ~ bloc + cult + dias, ninfas),
               effect = c("cult", "dias"))
 
 ## Estimando as contagens médias com intervalo de confiança
 library(multcomp)
 
 ## pela Poisson
-aux <- exp(confint(glht(m3P, linfct = X),
+aux <- exp(confint(glht(m2P, linfct = X),
                calpha = univariate_calpha())$confint)
 colnames(aux) <- c("fit", "lwr", "upr")
 pred <- aux
 
 ## pela Quasi-Poisson
-aux <- exp(confint(glht(m3Q, linfct = X),
+aux <- exp(confint(glht(m2Q, linfct = X),
                    calpha = univariate_calpha())$confint)
 ## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
 pred <- rbind(pred, aux)
 
 ## pela Binomial Negativa
-aux <- family(m2B)$linkinv(confint(glht(m3B, linfct = X),
+aux <- family(m2B)$linkinv(confint(glht(m2B, linfct = X),
                    calpha = univariate_calpha())$confint)
 ## colnames(aux) <- c("Qfit", "Qlwr", "Qupr")
 pred <- rbind(pred, aux)
